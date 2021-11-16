@@ -1,0 +1,296 @@
+\documentclass[12pt, a4paper, oneside]{ctexart}
+\usepackage{amsmath, amsthm, amssymb, bm, graphicx, hyperref, mathrsfs}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\title{\textbf{Assignment1}}
+\author{江书洋(519030910043)}
+\date{\today}
+\linespread{1}
+\newcounter{problemname}
+\newenvironment{problem}{\stepcounter{problemname}\par\noindent\textsc{Problem \arabic{problemname}. }}{\\\par}
+\newenvironment{solution}{\par\noindent\textsc{Solution. }}{\\\par}
+\newenvironment{note}{\par\noindent\textsc{Note of Problem \arabic{problemname}. }}{\\\par}
+
+\begin{document}
+
+\maketitle
+% \lstset{
+% 	basicstyle          =   \sffamily,          % 基本代码风格
+% 	keywordstyle        =   \bfseries,          % 关键字风格
+% 	commentstyle        =   \rmfamily\itshape,  % 注释的风格，斜体
+% 	stringstyle         =   \ttfamily,  % 字符串风格
+% 	flexiblecolumns,                % 别问为什么，加上这个
+% 	numbers             =   left,   % 行号的位置在左边
+% 	showspaces          =   false,  % 是否显示空格，显示了有点乱，所以不现实了
+% 	numberstyle         =   \zihao{-5}\ttfamily,    % 行号的样式，小五号，tt等宽字体
+% 	showstringspaces    =   false,
+% 	captionpos          =   t,      % 这段代码的名字所呈现的位置，t指的是top上面
+% 	frame               =   lrtb,   % 显示边框
+% }
+
+% \lstdefinestyle{Python}{
+% 	language        =   Python, % 语言选Python
+% 	basicstyle      =   \zihao{-5}\ttfamily,
+% 	numberstyle     =   \zihao{-5}\ttfamily,
+% 	keywordstyle    =   \color{blue},
+% 	keywordstyle    =   [2] \color{teal},
+% 	stringstyle     =   \color{magenta},
+% 	commentstyle    =   \color{red}\ttfamily,
+% 	breaklines      =   true,   % 自动换行，建议不要写太长的行
+% 	columns         =   fixed,  % 如果不加这一句，字间距就不固定，很丑，必须加
+% 	basewidth       =   0.5em,
+% }
+
+\begin{problem}
+     Solve the following recurrence relations and give a Θ bound for each of them.
+     \begin{enumerate}
+         \item $T(n) = 5T(n/4) + n$
+         \item $T(n) = 7T(n/7) + n$
+         \item $T(n) = 49T(n/25) + n^{3/2} \log n$
+         \item $T(n) = 3T(n - 1) + 2$
+     \end{enumerate}
+\end{problem}
+
+\begin{solution}
+    I present all time complexities with master theorem.
+    $$T(n) = a(\frac{T}{b}) + O(n^d) \\$$
+    
+    $$
+    T(n) = \begin{cases}
+    O(n^d) & a < b^d \\
+    O(n^{\log_ba}) & a > b^d \\ 
+    O(n^d\log n) & a = b ^ d\\
+    \end{cases}
+    $$
+    
+    \begin{enumerate}
+        \item $a = 5, b = 4, d = 1, T(n) = n^{log_45}$
+        \item $a = 7, b = 7, d = 1, T(n) = n\log n$
+        \item $a = 49, b = 25, d = 1.5, T(n) = n^{3/2}\log n$ 
+        $$T(n) = O(n^{3/2}\log n) (1 + \frac{49}{log25\times25^{3/2}} +\cdots +(\frac{49}{log25 \times25^{3/2}})^{\log_{25}49})$$
+        $$T(n) = n^{3/2}\log n$$
+        \item $T(n) = O(3^n)$ because $T(n) + 1 = 3(T(n-1) + 1) \longrightarrow T(n) = O(3^n - 1) = O(3^n)$
+    \end{enumerate}
+\end{solution}
+
+% \begin{note}
+%     Write note here. 
+% \end{note}
+
+\begin{problem}
+     Suppose you have $k$ sorted arrays, each with $n$ elements, and you want to combine them into a single sorted array of $kn$ elements.
+Design an efficient algorithm using divide-and-conquer (and give the time complexity).
+\end{problem}
+
+\begin{solution}
+    % Suppose this algorithm has the following prototype: \\
+    % \lstinline |void sortKArray(int**nums, int k, int n)|. \\ 
+    Divide the $k$ arrays into two parts, one part contains $\lfloor k/ 2 \rfloor $ arrays and the other part contains $k - \lfloor k / 2 \rfloor$. First use the same algorithm to process the first part and render a sorted array with $n\lfloor\frac{k}{2}\rfloor$ elements and process the another part and then render a sorted array with $nk-n\lfloor\frac{k}{2}\rfloor$ elements as well. 
+    
+    After obtaining the two arrays denoted as $A$ and $B$, merge the two sorted array with the intuition in merge sort. In other words, use two pointers $i$ and $j$ and point each of them to the first element of those two sorted array, respectively. Set $k$ to the first element of array to be filled. 
+    \begin{itemize}
+        \item repeat
+        \begin{itemize}
+            \item append $\min\{A[i], B[j]\}$
+            \item if $A[i]$ is smaller, then move i to i + 1; other wise move j to j + 1
+            \item break if $i > n\lfloor \frac{k}{2}\rfloor$ or $j > nk - \lfloor \frac{k}{2}\rfloor$
+        \end{itemize}
+        \item append the remainder of the non-empty list to the answer list
+    \end{itemize}
+    After recursively call the algorithm for almost $\log k$ times and merge each two arrays, we can obtain the final sorted array with $nk$ elements. The recurrence relation is $T(nk) = 2T(nk/2) + O(nk)$. Because $n$ here is a constant, so the simplified relation is $T(k) = 2T(k/2) + O(k)$. From master theorem, its time complexity is $O(k\log k)$. So combined with $n$, the final time complexity is $O(nk\log k)$
+\end{solution}
+
+\begin{problem}
+    You are interested in analyzing some hard-to-obtain data from two separate databases. Each database contains n numerical values-so there are 2n values total-and you may assume that no two values are the same. You’d like to determine the median of this set of 2n values, which we will define here to be the n-th smallest45g value. However, the only way you can access these values is through queries to the databases. In a single query, you can specify a value k to one of the two databases, and the chosen database will return the k-th smallest value that it contains. Since queries are expensive, you would like to compute the median using as few queries as possible. Give an algorithm
+that find the median value using O(log n) queries.     
+\end{problem}
+
+\begin{solution}
+    \begin{algorithm}[H]
+    \caption{median-search(A, B, al, ar, bl, br)} %算法的名字
+    \hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
+    input two databases A, B, and the number of elements in each dataset $n$ and four pointers of each array $al, ar, bl, br$\\
+    \hspace*{0.02in} {\bf Output:} %算法的结果输出
+    Median number in two databases
+    \begin{algorithmic}[1]
+
+    \If{al=ar and bl=br}
+        \State atemp = search $amid^{th}$ element in dataset A
+        \State btemp = search $bmid^{th}$ element in dataset B
+        \State return $\frac{atemp + btemp}{2}$
+    \EndIf
+    
+    \State $amid=\frac{al + ar}{2}$
+    \State $bmid=\frac{bl + br}{2}$
+    \State atemp = search $amid^{th}$ element in dataset A
+    \State btemp = search $bmid^{th}$ element in dataset B
+    \If{atemp < btemp} 
+        \State return median-search(A, B, amid + 1, ar, bl, bmid - 1)
+    \Else
+        \State return midian-search(A, B, al, amid - 1, bmid + 1, br)
+    \EndIf
+    % \For{condition} % For 语句，需要和EndFor对应
+    % 　　\State ...
+    % 　　\If{condition} % If 语句，需要和EndIf对应
+    % 　　　　\State ...
+    % 　　\Else
+    % 　　　　\State ...
+    % 　　\EndIf
+    % \EndFor
+    % \While{condition} % While语句，需要和EndWhile对应
+    % 　　\State ...
+    % \EndWhile
+    % \State \Return result
+    \end{algorithmic}
+\end{algorithm}
+\end{solution}
+
+\begin{problem}
+    Show that the QuickSort algorithm runs in $O(n^c)$ time on average for some constant $c < 2$ if the pivot is chosen randomly.
+\end{problem}
+
+\begin{solution}
+    Suppose the randomly selected pivot has 1/2 possibility to be chosen in the middle of the array. Suppose we need $\tau(n)$ to divide the problem to two sub problems: $T(n) = \tau(n) + T(\frac{1}{4}n) + T(\frac{3}{4}n)$. Take expectation on each side, which renders 
+    $$E[T(n)] = E[\tau(n)] + E[T(\frac{1}{4}n)] + E[T(\frac{3}{4}n)]$$
+    Because we need at most two expected times to reduce the original problem to two sub problems with $O(n)$, so the final recurrence relation is 
+    $$T'(n) = T'(\frac{1}{4}n) + T'(\frac{3}{4}n) + O(n)$$
+    Because we know that the lower bound of sorting algorithm is $\Theta(n\log n)$, which has the higher order than $O(n)$, so 
+    $$T'(\frac{1}{4}n) + T'(\frac{3}{4}n) \leq \frac{4}{3}T'(\frac{3}{4})$$
+    The final result is that 
+    $$T'(n) \leq \frac{4}{3}T'(\frac{3}{4}n) + O(n) $$
+    With master theorem, the time complexity is $O(n\log n)$, whose order is less than 2 in $O(n^c)$
+
+\end{solution}
+
+\begin{problem}
+    Given an $n×m$ 2-dimensional integer array\\ 
+    $A[0,\cdots , n−1; 0, \cdots,m−1]$ where $A[i, j]$ denotes the cell at the i-th row and the j-th column, a local minimum is a cell $A[i, j]$ such that $A[i, j]$ is smaller than each of its four adjacent cells $A[i−1, j]$, $A[i+ 1, j]$, $A[i, j −1]$, $A[i, j + 1]$. Notice that $A[i, j]$ only has three adjacent cells if it is on the boundary, and it only has two adjacent cells if it is at the corner. Assume all the cells have distinct values. Your objective is to find one local minimum (i.e., you do not have
+to find all of them).
+    \begin{enumerate}
+        \item Suppose $m = 1$ so $A$ is a 1-dimensional array. Design a divide-and-conquer-based algorithm for the problem above. Write a recurrence relation of the
+algorithm, and analyze its running time.
+        \item Suppose $m = n$. Design a divide-and-conquer-based algorithm for the problem above. Write a recurrence relation of the algorithm, and analyze its
+running time.
+        \item Generalize your algorithm such that it works for general m and n. The running time of your algorithm should smoothly interpolate between the
+running times for the first two parts.
+    \end{enumerate}
+\end{problem}
+
+\begin{solution}
+    \begin{enumerate}
+        \item The pseudo code is shown below:
+        \begin{algorithm}[H]
+            \caption{find-local-minimum1} %算法的名字
+            \label{alg: find_local_minimum1}
+            \hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
+            input one array $A$, its begin index $l$ and its end index $r$\\
+            \hspace*{0.02in} {\bf Output:} %算法的结果输出
+            local minimum in the array
+            \begin{algorithmic}[1]
+                \If{l + 1= r}
+                    \State return A[l] if A[l] < A[r] else A[r]
+                \EndIf
+                \State $m=\frac{r + l}{2}$
+                \If{$A[m] < A[m + 1]$}
+                    \State return find-local-minimum1($A, l, m$)
+                \Else
+                    \If{$A[m] > A[m + 1]$}
+                        \State return find-local-minimum1($A, m, r$)
+                % \State left-minimum = find-local-minimum(A, l, m)
+                % \State right-minimum = find-local-minimum(A, m + 1, r)
+                % \If{left-minimum != -1 or right-minimum != -1}
+                %     \State return the value that is not equal to -1
+                % \Else
+                %     \If{A[m] or A[m + 1] is a local minimum}
+                %         \State return the local minimum
+                %     \Else
+                %         \State return -1
+                    
+
+            \end{algorithmic}
+        \end{algorithm}
+        To get the final answer, the initial input is find-local-minimum1(A, 0, n-1). Recurrence relation is $T(n) = T(n / 2) + O(1)$. Each recurrence reduces half of the problem size so the final complexity is $O(\log n)$.
+        
+        \item In fact, whether $m$ equals to $n$ or not does not affect the algorithm. So the postcode below applies to both situations. 
+        \begin{algorithm}[H]
+            \caption{find-local-minimum2} %算法的名字
+            \label{alg:find-local-minimum2}
+            \hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
+            input one 2-d array $A$, its upper left row index $uli$, its upper left column index $ulj$, its lower right row index $lri$ and its lower right column index $lrj$ \\
+            \hspace*{0.02in} {\bf Output:} %算法的结果输出
+            local minimum in the matrix
+            \begin{algorithmic}[1]
+                
+                \State $m_i=\frac{uli + lri}{2}$
+                \State $m_j=\frac{ulj + lrj}{2}$
+                \State find the minimum value in $A[m_i, :]$ and $A[:, m_j]$ whose index is $(k_i, k_j)$
+                \If{$A[k_i][k_j]$ is the local minimum in $A$}
+                    \State return $A[k_i][k_j]$
+                \Else
+                    \State look around the point and find a point that is less than $A[k_i][k_j]$
+                    \State shrink the matrix size toward the point which is less than $A[k_i][k_j]$
+                    \State denotes the next four indices as $n\_uli,n\_ulj, n\_lri, n\_lrj$
+                    \State return find-local-minimum2($A, n\_uli,n\_ulj, n\_lri, n\_lrj$)
+                    % \If{$A[k_i][k_j] > A[k_i][k_j - 1]$}
+                    %     \State $n\_ulj=ulj$ and $n\_lrj=m_j$ if $k_j<m_j$ else $n\_ulj=m_j$ and $n\_lrj=lrj$
+                    %     \State return find-local-minimum2($A, uli, n\_ulj, m_i, n\_lrj$) 
+                    %     % findMinCol($A, uli, ulj, mi, mj$)
+                    % \EndIf
+                    % \If{$A[k_i][k_j] > A[k_i][k_j + 1]$}
+                    %     \State $n\_ulj=ulj$ and $n\_lrj=m_j$ if $k_j<m_j$ else $n\_ulj=m_j$ and $n\_lrj=lrj$
+                    %     \State return findMinCol($A, mi, mj, lri, lrj$)
+                    % \EndIf
+
+            \end{algorithmic}
+        \end{algorithm}
+        % \begin{algorithm}[H]
+        %     \caption{findMinCol} %算法的名字
+        %     \label{alg:findMinCol}
+        %     \hspace*{0.02in} {\bf Input:} %算法的输入， \hspace*{0.02in}用来控制位置，同时利用 \\ 进行换行
+        %     input one 2-d array $A$, its upper left row index $uli$, its upper left column index $ulj$, its lower right row index $lri$ and its lower right column index $lrj$ \\
+        %     \hspace*{0.02in} {\bf Output:} %算法的结果输出
+        %     local minimum in the matrix
+        %     \begin{algorithmic}[1]
+                
+        %         \State $mj=\frac{ulj + lrj}{2}$
+        %         \State find the minimum value in $A[:, mj]$ whose index is $mi$
+        %         \If{$A[mi][mj]$ is the local minimum in $A[mi, :]$}
+        %             \State return $A[mi][mj]$
+        %         \Else
+        %             \If{$A[mi][mj] > A[mi - 1][mj]$}
+        %                 \State return find-local-minimum2($A, uli, ulj, mi, mj$)
+        %             \EndIf
+        %             \If{$A[mi][mj] > A[mi - 1][mj]$}
+        %                 \State return find-local-minimum2($A, mi, mj, lri, lrj$)
+        %             \EndIf
+
+        %     \end{algorithmic}
+        % \end{algorithm}
+        
+        To get the final answer, input find-local-minimum2(A, 0, 0, n-1, n-1). Because each time we guarantee that the point $A[k_i][k_j]$ is the least one in the small square, following the direction in which the value of number is decreasing can ensure a local minimum. Recurrence relation is $T(n^2) = T(n^2/4) + O(n)$, so the final time complexity is $O(n)$.
+        
+        \item The algorithm is illustrated in problem 2 where I used a more general way to solve the problem. Although that method may not be the optimal algorithm for problem 2, it can still apply to this problem because I don't assume $m = n$ in the algorithm. So the algorithm pseudo code can refer to \ref{alg:find-local-minimum2}.
+        
+        The recurrence relationship is $T(mn) = T(mn/4) + O(m + n)$ and following the equation below:
+        $$
+        T(nm) = n + m + \frac{n + m}{2} + \cdots + 1=2(n+m)
+        $$
+        
+        So if $n > m$ the final relation is that
+        $$
+        \log n < 2(n + m) < 4n
+        $$
+        where $4n$ is derived from $n=m$ in problem 2.
+        % To prove the correctness, we consider the following three conditions:
+        % \begin{enumerate}
+        %     \item $m = n$, the condition is the same as that in the previous problem
+        %     \item $1<m<n$, the total problem size is less than $n \times n$, so the final time consumption is assumed to be less than $O(n)$ but more than $\log n$
+        %     \item $m > n$, 
+        % \end{enumerate}
+    \end{enumerate}
+\end{solution}
+
+\end{document}
